@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
@@ -11,6 +10,7 @@ const openai = new OpenAI({
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
+    executablePath: '/usr/bin/chromium',
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -51,4 +51,4 @@ client.on('message', async (message) => {
   }
 });
 
-client.initialize()
+client.initialize();
