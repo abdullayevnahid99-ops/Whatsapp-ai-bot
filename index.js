@@ -14,20 +14,26 @@ let clientReady = false;
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const puppeteerArgs = [
+  "--no-sandbox",
+  "--disable-setuid-sandbox",
+  "--disable-dev-shm-usage",
+  "--disable-gpu",
+  "--no-first-run",
+  "--no-zygote",
+  "--single-process",
+];
+
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-gpu",
-      "--no-first-run",
-      "--no-zygote",
-      "--single-process",
-    ],
+    args: puppeteerArgs,
   },
+  webVersionCache: {
+    type: 'remote',
+    remotePath: 'https://raw.githubusercontent.com/wwebjs/whatsapp-web.js/master/src/web/versions.json'
+  }
 });
 
 client.on("qr", (qr) => {
@@ -74,12 +80,12 @@ app.get("/", (req, res) => {
   if (clientReady) {
     res.send("<h1>Client is ready! No QR needed.</h1>");
   } else if (qrCodeData) {
-    res.send('<h1>Scan this QR code with your phone:</h1><img src="' + qrCodeData + '" alt="QR Code" style="width:300px;height:300px;">');
+    res.send(`<h1>Scan this QR code with your phone:</h1><img src="${qrCodeData}" alt="QR Code">`);
   } else {
     res.send("<h1>Waiting for QR code...</h1><p>Please refresh the page after a few moments.</p>");
   }
 });
 
 app.listen(PORT, () => {
-  console.log("Server listening on port " + PORT);
+  console.log(`Server listening on port ${PORT}`);
 });
