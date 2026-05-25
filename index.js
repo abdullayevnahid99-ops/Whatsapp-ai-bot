@@ -53,29 +53,26 @@ client.on("ready", () => {
 });
 
 client.on("message_create", async (message) => {
-  console.log("message_create event fired:", message.from, message.to, message.fromMe, message.body.substring(0, 50));
-  
-  if (message.fromMe) return;
-  
-  if (message.from.endsWith("@c.us")) {
-    console.log("Received message from private chat:", message.body);
-    try {
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4.1-mini",
-        messages: [{ role: "user", content: message.body }],
-      });
-      const response = completion.choices[0].message.content;
-      await message.reply(response);
-      console.log("Reply sent successfully");
-    } catch (error) {
-      console.error("Error calling OpenAI API:", error.message);
-      await message.reply("Sorry, I could not process your request.");
-    }
-  }
-});
+  console.log("message_create:", message.from, "->", message.to, "fromMe:", message.fromMe, "body:", message.body.substring(0, 50));
 
-client.on("message", async (message) => {
-  console.log("message event fired:", message.from, message.body.substring(0, 50));
+  if (message.fromMe) return;
+  if (message.isStatus) return;
+  if (message.from.includes("@g.us")) return;
+  if (message.from.includes("@broadcast")) return;
+
+  console.log("Processing message from:", message.from, "body:", message.body);
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
+      messages: [{ role: "user", content: message.body }],
+    });
+    const response = completion.choices[0].message.content;
+    await message.reply(response);
+    console.log("Reply sent successfully to:", message.from);
+  } catch (error) {
+    console.error("OpenAI Error:", error.message);
+    await message.reply("Sorry, I could not process your request.");
+  }
 });
 
 client.on("disconnected", (reason) => {
